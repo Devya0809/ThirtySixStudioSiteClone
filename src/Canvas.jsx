@@ -5,12 +5,12 @@ import gsap from "gsap";
 
 function Canvas({ details }) {
   const { startIndex, numImages, duration, size, top, left, zIndex } = details;
-
   const [index, setIndex] = useState({ value: startIndex });
   const canvasRef = useRef(null);
 
   useGSAP(() => {
-    gsap.to(index, {
+    // Store the animation reference
+    const animation = gsap.to(index, {
       value: startIndex + numImages - 1,
       duration: duration,
       repeat: -1,
@@ -25,22 +25,38 @@ function Canvas({ details }) {
       duration: 1,
       ease: "power2.inOut",
     });
-  });
+
+    // Cleanup function
+    return () => {
+      animation.kill();
+    };
+  }, [startIndex, numImages, duration]); // Add dependencies
 
   useEffect(() => {
+    // Add null check
+    if (!canvasRef.current) return;
+
     const scale = window.devicePixelRatio;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const img = new Image();
     img.src = canvasImages[index.value];
+    
     img.onload = () => {
+      // Add check to ensure canvas still exists
+      if (!canvas) return;
+      
       canvas.width = canvas.offsetWidth * scale;
       canvas.height = canvas.offsetHeight * scale;
       canvas.style.width = canvas.offsetWidth + "px";
       canvas.style.height = canvas.offsetHeight + "px";
-
       ctx.scale(scale, scale);
       ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    };
+
+    // Cleanup
+    return () => {
+      img.onload = null;
     };
   }, [index]);
 
