@@ -5,7 +5,6 @@ import LocomotiveScroll from "locomotive-scroll";
 import { useEffect, useState, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Circ, Expo } from "gsap/all";
 
 function App() {
   const [showCanvas, setShowCanvas] = useState(false);
@@ -13,7 +12,15 @@ function App() {
   const growingSpan = useRef(null);
 
   useEffect(() => {
-    const locomotiveScroll = new LocomotiveScroll();
+    // Only initialize on client-side
+    if (typeof window !== 'undefined') {
+      const locomotiveScroll = new LocomotiveScroll();
+      
+      // Cleanup
+      return () => {
+        if (locomotiveScroll) locomotiveScroll.destroy();
+      };
+    }
   }, []);
 
   useEffect(() => {
@@ -57,10 +64,16 @@ function App() {
     };
 
     const headingElement = headingref.current;
-    headingElement.addEventListener("click", handleClick);
+    if (headingElement) {
+      headingElement.addEventListener("click", handleClick);
+    }
 
     // Clean up event listener on unmount
-    return () => headingElement.removeEventListener("click", handleClick);
+    return () => {
+      if (headingElement) {
+        headingElement.removeEventListener("click", handleClick);
+      }
+    };
   }, []);
 
   return (
@@ -71,7 +84,9 @@ function App() {
       ></span>
       <div className="w-full relative min-h-screen font-['Helvetica_Now_Display']">
         {showCanvas &&
-          data[0].map((canvasdets, index) => <Canvas details={canvasdets} />)}
+          data[0].map((canvasdets, index) => (
+            <Canvas key={`canvas-0-${index}`} details={canvasdets} />
+          ))}
         <div className="w-full relative z-[1] h-screen ">
           <nav className="w-full p-8 flex justify-between z-50">
             <div className="brand text-2xl font-md">thirtysixstudios</div>
@@ -118,7 +133,9 @@ function App() {
       </div>
       <div className="w-full relative h-screen  mt-32 px-10">
         {showCanvas &&
-          data[1].map((canvasdets, index) => <Canvas details={canvasdets} />)}
+          data[1].map((canvasdets, index) => (
+            <Canvas key={`canvas-1-${index}`} details={canvasdets} />
+          ))}
         <h1 className="text-8xl tracking-tighter">about the brand</h1>
         <p className="text-4xl leading-[1.8] w-[80%] mt-10 font-light">
           we are a team of designers, developers, and strategists who are
