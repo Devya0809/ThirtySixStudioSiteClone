@@ -6,10 +6,6 @@ import { useEffect, useState, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
-// Debug: Check if GSAP loaded
-console.log("GSAP loaded:", typeof gsap);
-console.log("GSAP object:", gsap);
-
 // Register GSAP plugin
 gsap.registerPlugin(useGSAP);
 
@@ -18,24 +14,45 @@ function App() {
   const headingref = useRef(null);
   const growingSpan = useRef(null);
 
+  // Debug: Log data on mount
+  useEffect(() => {
+    console.log("App mounted");
+    console.log("Data imported:", data);
+    console.log("Data[0]:", data[0]);
+    console.log("Data[0] length:", data[0]?.length);
+    console.log("First canvas details:", data[0]?.[0]);
+  }, []);
+
   useEffect(() => {
     // Only initialize on client-side
     if (typeof window !== 'undefined') {
-      console.log("Initializing Locomotive Scroll");
-      const locomotiveScroll = new LocomotiveScroll();
+      const locomotiveScroll = new LocomotiveScroll({
+        lenisOptions: {
+          duration: 1.2,
+          smoothWheel: true,
+        }
+      });
+      
+      console.log("Locomotive Scroll initialized");
       
       // Cleanup
       return () => {
-        if (locomotiveScroll) locomotiveScroll.destroy();
+        if (locomotiveScroll && locomotiveScroll.destroy) {
+          locomotiveScroll.destroy();
+        }
       };
     }
   }, []);
 
   useEffect(() => {
     const handleClick = (e) => {
-      console.log("Heading clicked, GSAP available:", typeof gsap);
+      console.log("=== HEADING CLICKED ===");
+      console.log("Current showCanvas:", showCanvas);
       
       setShowCanvas((prevShowCanvas) => {
+        const newValue = !prevShowCanvas;
+        console.log("Toggling showCanvas from", prevShowCanvas, "to", newValue);
+        
         if (!prevShowCanvas) {
           gsap.set(growingSpan.current, {
             top: e.clientY,
@@ -69,7 +86,7 @@ function App() {
           });
         }
 
-        return !prevShowCanvas;
+        return newValue;
       });
     };
 
@@ -78,13 +95,27 @@ function App() {
       headingElement.addEventListener("click", handleClick);
     }
 
-    // Clean up event listener on unmount
     return () => {
       if (headingElement) {
         headingElement.removeEventListener("click", handleClick);
       }
     };
   }, []);
+
+  // Debug: Log when showCanvas changes
+  useEffect(() => {
+    console.log("showCanvas changed to:", showCanvas);
+    console.log("Should render", data[0]?.length, "canvases");
+    
+    // Force a check after state update
+    setTimeout(() => {
+      const canvasCount = document.querySelectorAll('canvas').length;
+      console.log("Canvas elements in DOM:", canvasCount);
+    }, 100);
+  }, [showCanvas]);
+
+  console.log("=== RENDERING APP ===");
+  console.log("showCanvas:", showCanvas);
 
   return (
     <>
@@ -93,10 +124,19 @@ function App() {
         className="growing rounded-full block fixed top-[-20px] left-[-20px] w-5 h-5"
       ></span>
       <div className="w-full relative min-h-screen font-['Helvetica_Now_Display']">
-        {showCanvas &&
-          data[0].map((canvasdets, index) => (
-            <Canvas key={`canvas-0-${index}`} details={canvasdets} />
-          ))}
+        {console.log("About to check if should render canvases...")}
+        {showCanvas ? (
+          <>
+            {console.log("showCanvas is TRUE, rendering canvases...")}
+            {data[0].map((canvasdets, index) => {
+              console.log(`Creating Canvas #${index}:`, canvasdets);
+              return <Canvas key={`canvas-0-${index}`} details={canvasdets} />;
+            })}
+          </>
+        ) : (
+          console.log("showCanvas is FALSE, not rendering canvases")
+        )}
+        
         <div className="w-full relative z-[1] h-screen ">
           <nav className="w-full p-8 flex justify-between z-50">
             <div className="brand text-2xl font-md">thirtysixstudios</div>
@@ -134,7 +174,7 @@ function App() {
           <div className="w-full absolute bottom-0 left-0">
             <h1
               ref={headingref}
-              className="text-[17rem] font-normal tracking-tight leading-none pl-5"
+              className="text-[17rem] font-normal tracking-tight leading-none pl-5 cursor-pointer"
             >
               Thirtysixstudios
             </h1>
