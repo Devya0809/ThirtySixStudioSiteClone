@@ -7,10 +7,11 @@ function Canvas({ details }) {
   const { startIndex, numImages, duration, size, top, left, zIndex } = details;
   const [index, setIndex] = useState({ value: startIndex });
   const canvasRef = useRef(null);
+  const animationRef = useRef(null);
 
   useGSAP(() => {
     // Store the animation reference
-    const animation = gsap.to(index, {
+    animationRef.current = gsap.to(index, {
       value: startIndex + numImages - 1,
       duration: duration,
       repeat: -1,
@@ -28,7 +29,9 @@ function Canvas({ details }) {
 
     // Cleanup function
     return () => {
-      animation.kill();
+      if (animationRef.current) {
+        animationRef.current.kill();
+      }
     };
   }, [startIndex, numImages, duration]); // Add dependencies
 
@@ -44,7 +47,7 @@ function Canvas({ details }) {
     
     img.onload = () => {
       // Add check to ensure canvas still exists
-      if (!canvas) return;
+      if (!canvas || !ctx) return;
       
       canvas.width = canvas.offsetWidth * scale;
       canvas.height = canvas.offsetHeight * scale;
@@ -54,9 +57,14 @@ function Canvas({ details }) {
       ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
     };
 
+    img.onerror = () => {
+      console.error(`Failed to load image: ${canvasImages[index.value]}`);
+    };
+
     // Cleanup
     return () => {
       img.onload = null;
+      img.onerror = null;
     };
   }, [index]);
 
