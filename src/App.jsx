@@ -6,6 +6,13 @@ import { useEffect, useState, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
+// Debug: Check if GSAP loaded
+console.log("GSAP loaded:", typeof gsap);
+console.log("GSAP object:", gsap);
+
+// Register GSAP plugin
+gsap.registerPlugin(useGSAP);
+
 function App() {
   const [showCanvas, setShowCanvas] = useState(false);
   const headingref = useRef(null);
@@ -14,6 +21,7 @@ function App() {
   useEffect(() => {
     // Only initialize on client-side
     if (typeof window !== 'undefined') {
+      console.log("Initializing Locomotive Scroll");
       const locomotiveScroll = new LocomotiveScroll();
       
       // Cleanup
@@ -25,6 +33,8 @@ function App() {
 
   useEffect(() => {
     const handleClick = (e) => {
+      console.log("Heading clicked, GSAP available:", typeof gsap);
+      
       setShowCanvas((prevShowCanvas) => {
         if (!prevShowCanvas) {
           gsap.set(growingSpan.current, {
