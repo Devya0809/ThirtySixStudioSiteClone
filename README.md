@@ -51,3 +51,7 @@ Ensure you have **Node.js** and **npm** installed.
    npm install
    npm run dev
    server starts on localhost:5173
+
+## Live Demo
+
+🔗 [View Live Site]((https://thirty-six-studio-site-clone.vercel.app/))
