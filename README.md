@@ -54,4 +54,4 @@ Ensure you have **Node.js** and **npm** installed.
 
 ## Live Demo
 
-🔗 [View Live Site]((https://thirty-six-studio-site-clone.vercel.app/))
+🔗 [View Live Site](https://thirty-six-studio-site-clone.vercel.app/)
