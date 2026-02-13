@@ -2,7 +2,6 @@ import "./index.css";
 import Canvas from "./Canvas";
 import data from "./data";
 import LocomotiveScroll from "locomotive-scroll";
-import "locomotive-scroll/dist/locomotive-scroll.css";
 import { useEffect, useState, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -19,28 +18,44 @@ function App() {
   useEffect(() => {
     // Initialize Locomotive Scroll v4
     if (typeof window !== 'undefined' && scrollRef.current) {
-      const scroll = new LocomotiveScroll({
-        el: scrollRef.current,
-        smooth: true,
-        multiplier: 1,
-        class: 'is-reveal'
-      });
+      try {
+        const scroll = new LocomotiveScroll({
+          el: scrollRef.current,
+          smooth: true,
+          smoothMobile: false,
+          resetNativeScroll: true,
+          tablet: {
+            smooth: false
+          },
+          smartphone: {
+            smooth: false
+          }
+        });
 
-      console.log("Locomotive Scroll v4 initialized");
+        console.log("✅ Locomotive Scroll v4 initialized successfully");
 
-      // Update on window resize
-      const handleResize = () => {
-        scroll.update();
-      };
-      window.addEventListener('resize', handleResize);
+        // Small delay to ensure everything is loaded
+        setTimeout(() => {
+          scroll.update();
+        }, 100);
 
-      // Cleanup
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        if (scroll) {
-          scroll.destroy();
-        }
-      };
+        // Update on window resize
+        const handleResize = () => {
+          scroll.update();
+        };
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          if (scroll) {
+            scroll.destroy();
+            console.log("🧹 Locomotive Scroll destroyed");
+          }
+        };
+      } catch (error) {
+        console.error("❌ Error initializing Locomotive Scroll:", error);
+      }
     }
   }, []);
 
@@ -104,7 +119,7 @@ function App() {
       ></span>
       
       <div ref={scrollRef} data-scroll-container>
-        <div className="w-full relative min-h-screen font-['Helvetica_Now_Display']">
+        <div data-scroll-section className="w-full relative min-h-screen font-['Helvetica_Now_Display']">
           {showCanvas &&
             data[0].map((canvasdets, index) => (
               <Canvas key={`canvas-0-${index}`} details={canvasdets} />
@@ -154,15 +169,23 @@ function App() {
           </div>
         </div>
         
-        <div className="w-full relative h-screen mt-32 px-10" data-scroll-section>
+        <div data-scroll-section className="w-full relative h-screen mt-32 px-10">
           {showCanvas &&
             data[1].map((canvasdets, index) => (
               <Canvas key={`canvas-1-${index}`} details={canvasdets} />
             ))}
-          <h1 className="text-8xl tracking-tighter" data-scroll data-scroll-speed="1">
+          <h1 
+            className="text-8xl tracking-tighter" 
+            data-scroll 
+            data-scroll-speed="1"
+          >
             about the brand
           </h1>
-          <p className="text-4xl leading-[1.8] w-[80%] mt-10 font-light" data-scroll data-scroll-speed="2">
+          <p 
+            className="text-4xl leading-[1.8] w-[80%] mt-10 font-light" 
+            data-scroll 
+            data-scroll-speed="2"
+          >
             we are a team of designers, developers, and strategists who are
             passionate about creating digital experiences that are both beautiful
             and functional, we are a team of designers, developers, and
