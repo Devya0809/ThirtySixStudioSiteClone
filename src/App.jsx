@@ -70,7 +70,7 @@ function App() {
 
           gsap.to("body", {
             color: "#000",
-            backgroundColor: "#fd2c2a",
+            backgroundColor: "#0000FF",
             duration: 1.2,
             ease: "power2.inOut",
           });
